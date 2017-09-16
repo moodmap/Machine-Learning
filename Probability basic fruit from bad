@@ -1,0 +1,35 @@
+#basic probability generator
+#not yet taking into account decrease in prob if user takes multiple fruits out in one go
+
+lis =['apple','apple','apple','pear','pear','pear', 'pear', 'pear', 'orange']
+
+prob_a = (lis.count('apple')/len(lis)) * 100
+prob_p = (lis.count('pear')/len(lis)) * 100
+prob_o = (lis.count('orange')/len(lis)) * 100
+
+while True:
+    select = input('Which fruit do you want the probability of selecting for? (apple, pear, orange): ')
+    num = input("How many pieces of fruit will you take from the bag?: ")
+    print(select, num, lis.count(select))
+    if num == 0:
+        print('You take no fruit..')
+        continue
+    elif int(num) > (lis.count(select)):
+        print("Probability is 0..there are only {} {}'s".format(lis.count(select),select))
+        continue
+
+    prob = ((lis.count(select)/int(num))/len(lis)) * 100
+    print("The prob of selecting {} randomly from a bag is {}".format(select, prob))
+    
+    rem = input("Would you like to remove a {}? (+, - or no): ".format(select))
+    if rem == '+':
+        lis.append(select)
+        print("Another {} has been added.".format(select))
+    elif rem == '-':
+        list.remove(select)
+        print("A {} has been removed.".format(select))
+    else:
+        print("Spoilsport..no more fruit for you!\n THE END")
+        break
+
+    
