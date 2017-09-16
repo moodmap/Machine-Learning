@@ -1,0 +1,33 @@
+#list of suggestions. Based on user feedback program changes the count in list of certain suggestion, thus the probability of it being suggested next time is affected.
+
+import random
+
+suggestions = ['bike ride','swim','read','call a friend']
+
+while True:
+    sug_sel = random.choice(suggestions)
+    feeling = input('How are you? Good or bad?: ')
+    if feeling == 'Good':
+        print("Great! You don't need this program.")
+        break
+    else:
+        print("I suggest - {}".format(sug_sel))
+    helpful = input('Was this helpful? Y/N?')
+    if helpful.upper() == 'Y':
+        print("Good. You're fine now.")
+        suggestions.append(sug_sel)
+    else:
+        print("ohhhhhh dear")
+        suggestions.remove(sug_sel)
+        add = input("Is there anything I could recommend in the future?(Y/N): ")
+        if add.upper() == 'Y':
+            new = input('What activity is it?: ')
+            suggestions.append(new)
+            print('{} has now been added.'.format(new))
+        else:
+            print('Then stop complaining and {}'.format(sug_sel))
+    print('New list: {}'.format(suggestions))
+    
+        
+
+
