@@ -1,0 +1,90 @@
+#Classification of Iris flowers, working alongside tutorial Machine Learning Mastery (https://machinelearningmastery.com/machine-learning-in-python-step-by-step/)
+#Focus on loading data, summarising data, implementing algorithms, evaluating and test on a test dataset. Running from Anaconda prompt
+
+# importing the relevant libraries from matplotlib, pandas and sklearn
+
+import pandas
+from pandas.tools.plotting import scatter_matrix
+import matplotlib.pyplot as plt
+from sklearn import model_selection
+from sklearn.metrics import classification_report
+from sklearn.metrics import confusion_matrix
+from sklearn.metrics import accuracy_score
+from sklearn.linear_model import LogisticRegression
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+from sklearn.naive_bayes import GaussianNB
+from sklearn.svm import SVC
+
+# Loading dataset from website (CSV file)
+url = "https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data"
+names = ['sepal-length', 'sepal-width', 'petal-length', 'petal-width', 'class']
+dataset = pandas.read_csv(url, names=names)
+
+#Taking a look at the data
+
+print(dataset.info())
+print(dataset.head(20))
+print(dataset.describe())
+print(dataset.describe())
+
+#Visualising the data - box and whisker plots, histograms, scatter matrix,
+
+dataset.plot(kind='box', subplots=True, layout=(2,2), sharex=False, sharey=False)
+plt.show()
+
+dataset.hist()
+plt.show()
+
+scatter_matrix(dataset)
+plt.show()
+
+#Separating the data into training and testing (validation) sets
+
+X = array[:,0:4]
+Y = array[:,4]
+validation_size = 0.20
+seed = 7
+X_train, X_validation, Y_train, Y_validation = model_selection.train_test_split(X, Y, test_size=validation_size, random_state=seed)
+
+#Testing six algorithms to find which will offer the best accuract - Logistic regression, linear discriminant analysis, k-nearest neighbors, classification and regression trees, Guassian Naive Bayes, Support Vector Machines
+
+seed = 7
+scoring = 'accuracy'
+
+models = []
+models.append(('LR', LogisticRegression()))
+models.append(('LDA', LinearDiscriminantAnalysis()))
+models.append(('KNN', KNeighborsClassifier()))
+models.append(('CART', DecisionTreeClassifier()))
+models.append(('NB', GaussianNB()))
+models.append(('SVM', SVC()))
+
+# evaluate each model in turn
+
+results = []
+names = []
+for name, model in models:
+	kfold = model_selection.KFold(n_splits=10, random_state=seed)
+	cv_results = model_selection.cross_val_score(model, X_train, Y_train, cv=kfold, scoring=scoring)
+	results.append(cv_results)
+	names.append(name)
+	msg = "%s: %f (%f)" % (name, cv_results.mean(), cv_results.std())
+	print(msg)
+
+fig = plt.figure()
+fig.suptitle('Algorithm Comparison')
+ax = fig.add_subplot(111)
+plt.boxplot(results)
+ax.set_xticklabels(names)
+plt.show()
+
+#K-nearest neighbor seems to offer the best accuracy. Run KNN on the test set:
+
+knn = KNeighborsClassifier()
+knn.fit(X_train, Y_train)
+predictions = knn.predict(X_validation)
+print(accuracy_score(Y_validation, predictions))
+print(confusion_matrix(Y_validation, predictions))
+print(classification_report(Y_validation, predictions))
