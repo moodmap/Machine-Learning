@@ -1,4 +1,5 @@
 #Practising opening data, understanding and visualising it, splitting into training and test sets, and doing some basic linear regression
+#Coded whilst watching lecture series 'Python for data science and machine learning bootcamp'.
 
 #importing the required libraries
 import pandas as pd
