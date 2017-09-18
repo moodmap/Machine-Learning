@@ -1,0 +1,61 @@
+#Same as previous project, but using real data this time from ecommerce data - can we predict how much a user will spend annually based on Avg session length
+#, time on app, time on website and length of membership:
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+%matplotlib inline
+import seaborn as sns
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn import metrics
+
+
+df = pd.read_csv("Ecommerce Customers")
+df.head()
+sns.pairplot(df)
+sns.distplot(df['Yearly Amount Spent'])
+sns.heatmap(df.corr(),annot = True)
+
+
+df.columns
+X = df[['Avg. Session Length', 'Time on App',
+       'Time on Website', 'Length of Membership']]
+y = df['Yearly Amount Spent']
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.4)
+lr = LinearRegression()
+lr.fit(X_train, y_train)
+lr.coef_
+cdf = pd.DataFrame(lr.coef_,X.columns,columns=['Coeff'])
+predictions = lr.predict(X_test)
+
+
+plt.scatter(y_test,predictions)
+sns.distplot((y_test-predictions))
+metrics.mean_squared_error(y_test, predictions)
+np.sqrt(metrics.mean_squared_error(y_test, predictions))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
