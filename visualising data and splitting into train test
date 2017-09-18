@@ -1,0 +1,36 @@
+#Practising opening data, understanding and visualising it, splitting into training and test sets, and doing some basic linear regression
+
+#importing the required libraries
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+%matplotlib inline
+import seaborn as sns
+from sklearn.model_selection import train_test_split
+
+#Getting a quick feel for the data
+df = pd.read_csv("USA_Housing.csv")
+df.head()
+df.info()
+df.describe()
+df.columns
+
+#Visualising the data
+sns.pairplot(df)
+sns.distplot(df['Price'])
+sns.heatmap(df.corr(),annot=True)
+
+#Separating the data into x and y and splitting into training and test sets
+df.columns
+X = df[['Avg. Area Income', 'Avg. Area House Age', 'Avg. Area Number of Rooms',
+       'Avg. Area Number of Bedrooms', 'Area Population']]
+y = df['Price']
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.4, random_state=101)
+
+#Some basic linear regression to practise what I've learned today
+lm = LinearRegression()
+lm.fit(X_train, y_train)
+print(lm.intercept_)
+lm.coef_
+cdf = pd.DataFrame(lm.coef_,X.columns,columns=['Coeff'])
+cdf
