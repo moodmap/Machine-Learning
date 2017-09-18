@@ -34,3 +34,28 @@ print(lm.intercept_)
 lm.coef_
 cdf = pd.DataFrame(lm.coef_,X.columns,columns=['Coeff'])
 cdf
+
+#Making predictions on the test set
+predictions = lm.predict(X_test)
+predictions
+y_test
+
+#visualising how effective the linear regression algorithm has been on our test set
+#Scatter plot looks highly correlated between yi and y
+plt.scatter(y_test,predictions)
+
+#distribution of residuals - seems to be normally distributed around £0 so looks like an effective model
+sns.distplot((y_test-predictions)) 
+
+#Getting a value on the loss of the function
+from sklearn import metrics
+
+#MAE - easy to use
+metrics.mean_absolute_error(y_test,predictions)
+
+#MSE - more effective in real life, as it 'punishes' high error points.
+metrics.mean_squared_error(y_test, predictions)
+
+#RMSE - most popular to use
+np.sqrt(metrics.mean_squared_error(y_test, predictions))
+
