@@ -1,4 +1,4 @@
-#Classification of Iris flowers, working alongside tutorial Machine Learning Mastery (https://machinelearningmastery.com/machine-learning-in-python-step-by-step/)
+#Classification of Iris flowers from a dataset, working alongside tutorial Machine Learning Mastery (https://machinelearningmastery.com/machine-learning-in-python-step-by-step/)
 #Focus on loading data, summarising data, implementing algorithms, evaluating and test on a test dataset. Running from Anaconda prompt
 
 # importing the relevant libraries from matplotlib, pandas and sklearn
@@ -26,7 +26,6 @@ dataset = pandas.read_csv(url, names=names)
 
 print(dataset.info())
 print(dataset.head(20))
-print(dataset.describe())
 print(dataset.describe())
 
 #Visualising the data - box and whisker plots, histograms, scatter matrix,
