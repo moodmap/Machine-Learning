@@ -1,0 +1,122 @@
+#Given a subset of data from Kaggle, detailing information about all of the passengers, including who survived.
+#Asked to predict the survival for all passengers not in the subset.
+#My initial thoughts - View the data, see what needs tidying, tidy it all up, this is obvs a supervised learning problem so I'll use a few algorithms from this set and see what accuracy each has,
+# after splitting the subset into a training and test data set
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+%matplotlib inline
+import sklearn
+from sklearn.model_selection import train_test_split
+
+#Loading the CSV file that I had downloaded
+df = pd.read_csv("train.csv")
+
+#Taking an initial look at the data
+df.head()
+df.info()
+df.describe()
+
+#drop the not so useful columns
+cols = ['Name', 'Ticket','Cabin']
+df = df.drop(cols, axis = 1)
+titanic_dummies = pd.concat(dummies, axis = 1)
+df = pd.concat((df,titanic_dummies), axis = 1)
+df = df.drop(['Pclass','Sex','Embarked'],axis = 1)
+#Age is important but have some missing values so will interpolate these values 
+df['Age'] = df['Age'].interpolate()
+
+X = df.values
+y = df['Survived'].values
+#Removing 'Survived' from the X data ('Survived is our y')
+X = np.delete(X,1,axis = 1)
+#Splitting the data into train and test, 30% for the test size
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.3)
+
+#Using a simple decision tree classifier to see how its prediction goes
+from sklearn import tree
+clf = tree.DecisionTreeClassifier(max_depth = 5)
+clf.fit(X_train, y_train)
+clf.score(X_test, y_test)
+#Decision tree classifier gives us a score of 79.4 percent on our test set. Going to try and improve this score.
+
+clf.feature_importances_
+#Seems that 'Fare' has 8% importance, whereas being female has 47.5% importance ('Women and children first'?)
+
+#Trying out random forests algorithm
+from sklearn import ensemble
+clf = ensemble.RandomForestClassifier(n_estimators = 100)
+clf.fit(X_train, y_train)
+clf.score(X_test, y_test)
+#Random forest has 79.9% score, so slightly better than decision tree on the test data
+
+#Gradient boosting algorithm
+clf = ensemble.GradientBoostingClassifier()
+clf.fit(X_train, y_train)
+clf.score(X_test, y_test)
+#81.8% score! Improvement by almost 2%
+
+#Going to fine tune the gradient booster slightly
+clf = ensemble.GradientBoostingClassifier(n_estimators = 78)
+clf.fit(X_train, y_train)
+clf.score(X_test, y_test)
+#85.5% score. Although when I run it multiple times, the score fluctuates between 78-85%
+
+
+#Using this algorithm for the test file from Kaggle, to make some real predictions (NB I got a final score of 77%)
+
+df = pd.read_csv("test.csv")
+
+cols = ['Name', 'Ticket','Cabin']
+df = df.drop(cols, axis = 1)
+
+#There was one niggling Nan value here. I decided to interpolate it because kaggle wanted all rows to remain. 
+df['Fare'] = df['Fare'].interpolate()
+dummies = []
+cols =['Pclass','Sex','Embarked']
+for col in cols:
+    dummies.append(pd.get_dummies(df[col]))
+titanic_dummies = pd.concat(dummies, axis = 1)    
+df = pd.concat((df,titanic_dummies), axis = 1)   
+df = df.drop(['Pclass','Sex','Embarked'],axis = 1)
+df['Age'] = df['Age'].interpolate()
+X = df.values
+
+
+y_results = clf.predict(X)
+output = np.column_stack((X[:,0],y_results))
+df_results = pd.DataFrame(output.astype('int'),columns=['PassengerID','Survived'])
+df_results.to_csv('titanic_results2.csv',index=False)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
