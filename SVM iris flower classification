@@ -1,0 +1,93 @@
+#This time using the SVM algorithm to classify iris flowers. Following along with 'Python for data science and machine learning bootcamp'
+
+#importing libraries, opening data
+import seaborn as sns
+iris = sns.load_dataset('iris')
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+%matplotlib inline
+
+#A quick inspection shows that the Setosa species is much more different to the other two, the other two are slightly similar
+sns.pairplot(iris, hue = 'species', palette='Dark2')
+
+setosa = iris[iris['species']=='setosa']
+sns.kdeplot( setosa['sepal_width'], setosa['sepal_length'],
+                 cmap="plasma", shade=True, shade_lowest=False)
+
+#Splitting data into train and test
+from sklearn.model_selection import train_test_split
+X_train, X_test, y_train, y_test = train_test_split(iris.drop('species',axis=1), iris['species'], test_size=0.33, random_state=42)
+
+#Running the SVM algorithm on training data
+from sklearn.svm import SVC
+svc_model = SVC()
+svc_model.fit(X_train, y_train)
+
+#Seeing how the algorithm works on our test data
+predictions = svc_model.predict(X_test)
+from sklearn.metrics import confusion_matrix,classification_report
+print(confusion_matrix(y_test, predictions))
+print(classification_report(y_test, predictions))
+
+#fits the data perfectly. I'd worry about high bias though.
+[[19  0  0]
+ [ 0 15  0]
+ [ 0  0 16]]
+ 
+                 precision    recall  f1-score   support
+
+     setosa       1.00      1.00      1.00        19
+ versicolor       1.00      1.00      1.00        15
+  virginica       1.00      1.00      1.00        16
+
+avg / total       1.00      1.00      1.00        50
+
+#Even though we've already got a perfect fit, for the purpose of practise I'm going to run GridSearchCV
+from sklearn.model_selection import GridSearchCV
+param_grid = {'C':[0.1,1,10,100], 'gamma':[1,0.1,0.01,0.001]}
+grid = GridSearchCV(SVC(),param_grid,refit=True,verbose=2)
+grid.fit(X_train,y_train)
+
+#Seeing how this does on the predictions. Can't get any better.
+grid_predictions = grid.predict(X_test)
+print(confusion_matrix(y_test,grid_predictions))
+print(classification_report(y_test,grid_predictions))
+
+#Same again. I am now the world leader in identifying Iris flowers. 
+[[19  0  0]
+ [ 0 15  0]
+ [ 0  0 16]]
+
+                  precision    recall  f1-score   support
+
+     setosa       1.00      1.00      1.00        19
+ versicolor       1.00      1.00      1.00        15
+  virginica       1.00      1.00      1.00        16
+
+avg / total       1.00      1.00      1.00        50
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
