@@ -1,0 +1,101 @@
+#Comparing the effectiveness of random forest classification algorithm vs decision tree to predict whether someone will pay back their loan, based on borrower data
+#Due to the random forest's seemingly heightened complexity I would expect it to do better on the data
+#Importing library
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+%matplotlib inline
+
+#opening .csv file
+loans = pd.read_csv('loan_data.csv')
+
+#Taking a look at the data
+loans.info()
+loans.describe()
+loans.head()
+
+#visualising the data
+plt.figure(figsize=(10,6))
+loans[loans['credit.policy']==1]['fico'].hist(alpha=0.5,color='blue',
+                                              bins=30,label='Credit.Policy=1')
+loans[loans['credit.policy']==0]['fico'].hist(alpha=0.5,color='red',
+                                              bins=30,label='Credit.Policy=0')
+plt.legend()
+plt.xlabel('FICO')
+
+
+plt.figure(figsize=(10,6))
+loans[loans['not.fully.paid']==1]['fico'].hist(alpha=0.5,color='blue',
+                                              bins=30,label='not.fully.paid=1')
+loans[loans['not.fully.paid']==0]['fico'].hist(alpha=0.5,color='red',
+                                              bins=30,label='not.fully.paid=0')
+plt.legend()
+plt.xlabel('FICO')
+
+
+plt.figure(figsize=(11,7))
+sns.countplot(x='purpose',hue='not.fully.paid',data=loans,palette='Set1')
+
+sns.jointplot(x='fico',y='int.rate',data=loans,color='purple')
+
+plt.figure(figsize=(11,7))
+sns.lmplot(y='int.rate',x='fico',data=loans,hue='credit.policy',
+           col='not.fully.paid',palette='Set1')
+
+
+#Tranforming a column 'purpose' into numerical categorical data, rather than string
+cat_feats = ['purpose']
+final_data = pd.get_dummies(loans, columns=cat_feats,drop_first=True)
+final_data.info()
+
+#Splitting data into train and test
+from sklearn.model_selection import train_test_split
+X_train, X_test, y_train, y_test = train_test_split(final_data.drop('not.fully.paid', axis = 1), final_data['not.fully.paid'], test_size=0.33, random_state=42)
+
+#Running the decision tree classifier through the test data, predicting, and comparing predictions with real results
+from sklearn.tree import DecisionTreeClassifier
+dtree = DecisionTreeClassifier()
+dtree.fit(X_train, y_train)
+
+predictions = dtree.predict(X_test)
+from sklearn.metrics import classification_report, confusion_matrix
+print(classification_report(y_test, predictions))
+
+
+              precision    recall  f1-score   support
+
+          0       0.85      0.84      0.84      2650
+          1       0.21      0.22      0.22       511
+
+avg / total       0.75      0.74      0.74      3161
+
+print(confusion_matrix(y_test, predictions))
+
+[[2226  424]
+ [ 397  114]]
+
+from sklearn.ensemble import RandomForestClassifier
+rfc = RandomForestClassifier(n_estimators=600)
+rfc.fit(X_train, y_train)
+
+predictions = rfc.predict(X_test)
+print(classification_report(y_test, predictions))
+
+               precision    recall  f1-score   support
+
+          0       0.84      0.99      0.91      2650
+          1       0.39      0.02      0.03       511
+
+avg / total       0.77      0.84      0.77      3161
+
+print(confusion_matrix(y_test,predictions))
+
+[[2636   14]
+ [ 502    9]]
+
+#Overall precision and recall have been improved by using the random forests, however the recall for class 1 has significiantly dropped
+#So performance improvement depends on what metrics you are looking at
+
+
+
