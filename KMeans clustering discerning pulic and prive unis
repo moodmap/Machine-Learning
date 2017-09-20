@@ -1,0 +1,82 @@
+#Exercise using KMeans clustering to discern universities into two separate groups (hoping it will split public from private).
+
+#Importing libraries
+import pandas as pd
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
+%matplotlib inline
+
+#Reading the data
+df = pd.read_csv("College_Data", index_col=0)
+df.head()
+df.info()
+df.describe()
+
+#Taking a quick look at some of the data
+sns.set_style('whitegrid')
+sns.lmplot('Room.Board','Grad.Rate',data=df, hue='Private',
+           palette='coolwarm',size=6,aspect=1,fit_reg=False)
+
+sns.set_style('whitegrid')
+sns.lmplot('Outstate','F.Undergrad',data=df, hue='Private',
+           palette='coolwarm',size=6,aspect=1,fit_reg=False)
+
+sns.set_style('darkgrid')
+g = sns.FacetGrid(df,hue="Private",palette='coolwarm',size=6,aspect=2)
+g = g.map(plt.hist,'Outstate',bins=20,alpha=0.7)
+
+sns.set_style('darkgrid')
+g = sns.FacetGrid(df,hue="Private",palette='coolwarm',size=6,aspect=2)
+g = g.map(plt.hist,'Grad.Rate',bins=20,alpha=0.7)
+
+#Noticed that one of the university's graduation was over 100, so replaced it with 100
+print(df[df['Grad.Rate'] > 100])
+df['Grad.Rate']['Cazenovia College'] = 100
+df[df['Grad.Rate'] == 100]
+
+#Set up the clustering algorithm
+from sklearn.cluster import KMeans
+k = KMeans(n_clusters = 2)
+k.fit(df.drop('Private',axis=1))
+k.cluster_centers_
+
+#Created a new column in the data based on the clustering, that would tell the reader if the university was private or public.
+def converter(cluster):
+    if cluster=='Yes':
+        return 1
+    else:
+        return 0
+df['Cluster'] = df['Private'].apply(converter)
+df.head()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
