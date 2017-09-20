@@ -1,0 +1,127 @@
+#The first project I'm doing entirely by myself (with help from google of course!). Lots of frustration but very rewarding with a steep learning curve.
+#On first go this attempt didn't go well. I will continue to learn and back to this problem with a fresh mind and hopefully fix it
+#This project provides a great deal of data for a given house, including how much it sold for.
+#I will use this data to fit an algorithm and apply it to data that does not contain the sold for data
+
+#Importing libraries
+import numpy as np
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+%matplotlib inline
+
+#Reading file and looking at the data
+df = pd.read_csv('train(1).csv')
+df.head()
+df.info()
+df.describe()
+
+#There were some columns that had such a small amount of data I decided to remove entirely from the dataset
+df.drop('PoolQC',axis=1,inplace=True)
+df.drop('Fence',axis=1,inplace=True)
+df.drop('MiscFeature',axis=1,inplace=True)
+df.drop('Alley',axis=1,inplace=True)
+df.drop('FireplaceQu',axis=1,inplace=True)
+
+#I removed all rows that had Nan. I very much hope to improve this process as time goes on, as I'm sure I lost a lot of valuable data this way.
+df.dropna(inplace=True)
+print('..')
+
+#Converting all string data into numerical vaues in order to run through the algorithms
+categoricals = df.select_dtypes(exclude=[np.number])
+categoricals.columns
+
+feats = ['MSZoning', 'Street', 'LotShape', 'LandContour', 'Utilities',
+       'LotConfig', 'LandSlope', 'Neighborhood', 'Condition1', 'Condition2',
+       'BldgType', 'HouseStyle', 'RoofStyle', 'RoofMatl', 'Exterior1st',
+       'Exterior2nd', 'MasVnrType', 'ExterQual', 'ExterCond', 'Foundation',
+       'BsmtQual', 'BsmtCond', 'BsmtExposure', 'BsmtFinType1', 'BsmtFinType2',
+       'Heating', 'HeatingQC', 'CentralAir', 'Electrical', 'KitchenQual',
+       'Functional', 'GarageType', 'GarageFinish', 'GarageQual', 'GarageCond',
+       'PavedDrive', 'SaleType', 'SaleCondition']
+final_data = pd.get_dummies(df, columns=feats,drop_first=True)
+
+#Splitting my data into training and test data 
+X = final_data.drop('SalePrice',axis=1)
+y = final_data['SalePrice']
+final_data.head()
+
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import classification_report,confusion_matrix
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=42)
+
+#I attempted to run the data through a decision tree classifier. For unknown resons I got a 0 on precision, recall, etc
+from sklearn import tree
+print('Decision tree classifier: ')
+clf = tree.DecisionTreeClassifier(max_depth = 5)
+clf.fit(X_train,y_train)
+prediction_1 = clf.predict(X_test)
+
+print(classification_report(y_test,prediction_1))
+print(confusion_matrix(y_test,prediction_1))
+
+#Got the same problem here for my random forest. As soon as I'm not coding alongside an instructor I suddenly realise all my knowledge gaps
+#which is a good thing. Now I can learn all that I don't yet know by myself..almost like taking off the training wheels.
+from sklearn import ensemble
+print('Random forest classifier: ')
+clf_2 = ensemble.RandomForestClassifier(n_estimators = 100)
+clf_2.fit(X_train,y_train)
+prediction_2 = clf.predict(X_test)
+
+print(classification_report(y_test,prediction_2))
+print(confusion_matrix(y_test,prediction_2))
+
+#This took a long, long time to run. Alas still a 0 precision..I wonder what I'm doing wrong.
+print('Gradient boosting classifier: ')
+clf_3 = ensemble.GradientBoostingClassifier(n_estimators = 1)
+clf_3.fit(X_train,y_train)
+prediction_3 = clf_3.predict(X_test)
+
+print(classification_report(y_test,prediction_3))
+print(confusion_matrix(y_test,prediction_3))
+print(',')
+
+#ValueError: Mix type of y not allowed, got types {'multiclass', 'continuous'}..hmmm
+print('Linear regression: ')
+from sklearn import linear_model
+clf_4 = linear_model.LinearRegression()
+clf_4.fit(X_train,y_train)
+prediction_4 = clf_4.predict(X_test)
+
+print(classification_report(y_test,prediction_4))
+print(confusion_matrix(y_test,prediction_4))
+print('done')
+
+#Well...at least this worked as expected!!
+print('hello world')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
