@@ -1,4 +1,4 @@
-#Classification of Iris flowers from a dataset, working alongside tutorial Machine Learning Mastery (https://machinelearningmastery.com/machine-learning-in-python-step-by-step/)
+#Classification of Iris flowers from a dataset using K nearest neighbor, working alongside tutorial Machine Learning Mastery (https://machinelearningmastery.com/machine-learning-in-python-step-by-step/)
 #Focus on loading data, summarising data, implementing algorithms, evaluating and test on a test dataset. Running from Anaconda prompt
 
 # importing the relevant libraries from matplotlib, pandas and sklearn
