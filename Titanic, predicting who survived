@@ -20,7 +20,13 @@ df.describe()
 
 #drop the not so useful columns
 cols = ['Name', 'Ticket','Cabin']
-df = df.drop(cols, axis = 1)
+df.drop(cols, axis = 1,inplace=True)
+
+#Removing passenger class, sex and embarked data
+dummies = []
+cols =['Pclass','Sex','Embarked']
+for col in cols:
+    dummies.append(pd.get_dummies(df[col]))
 titanic_dummies = pd.concat(dummies, axis = 1)
 df = pd.concat((df,titanic_dummies), axis = 1)
 df = df.drop(['Pclass','Sex','Embarked'],axis = 1)
