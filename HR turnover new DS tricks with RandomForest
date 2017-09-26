@@ -1,0 +1,88 @@
+#A cool dataset that provides a number of variables (x) and who has quit (y). Can use data science techniques to provide actionable
+#insights, such as low satisfaction results in high turnover, but not dependent on if they were injured at work.
+#ML can then predict which existing employees are likely to quit also.
+
+#importing the relevant libraries and data
+import numpy as np
+import pandas as pd
+pd.set_option('display.max_columns',100)
+import seaborn as sns
+import matplotlib.pyplot as plt
+%matplotlib inline
+
+df = pd.DataFrame.from_csv('..Datasets\HR\HR_comma_sep.csv', index_col=None)
+
+#Taking a look at the data..no null values..awesome!
+df.head()
+df.info()
+df.describe()
+df.isnull().any()
+#This next part wasn't necessary but wanted to practise applying it - a way to visualise which variables have the most null values
+missing_df = df.isnull().sum(axis=0).reset_index()
+missing_df.columns = ['column_name', 'missing_count']
+missing_df = missing_df.loc[missing_df['missing_count']>0]
+ind = np.arange(missing_df.shape[0])
+width = 0.9
+fig, ax = plt.subplots(figsize=(12,5))
+rects = ax.barh(ind, missing_df.missing_count.values, color='y')
+ax.set_yticks(ind)
+ax.set_yticklabels(missing_df.column_name.values, rotation='horizontal')
+ax.set_xlabel("Count of missing values")
+ax.set_title("Number of missing values in each column")
+plt.show()
+
+#Found a way to rename columns. Some of the clumns weren't clear so tried it out
+df = df.rename(columns={'time_spend_company':'years_at_company','left':'turnover'})
+
+#Looking at shape and type of the varialbes. Two strings so will need to use get_dummies and convert them to integers
+df.shape
+df.dtypes
+
+#Quick look at the overall turnover and correlation with the other variables
+turnover_rate = (df.turnover.value_counts())/14999
+turnover_rate
+turnover_Summary = df.groupby('turnover')
+turnover_Summary.mean()
+
+#Onto the ML..this comes quite naturally to me now, coding out these basics. I decided to go with the random forest just because
+#so far it's worked well for me on smallish data sets. Started without stating n_estimators and got 97% recall,F1, accuracy.
+#Used it with 100 n_estimators and got 99% so I'm happy with that! Maybe in the future I'll start looking for 99.9%.
+#All in all a successful and enjoyable project. Learned the isnull().any() trick, renaming columns, and using groupby in an interesting way.
+from sklearn.model_selection import train_test_split
+X = df.drop('turnover',axis=1)
+y = df['turnover']
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=42)
+from sklearn.ensemble import RandomForestClassifier
+clf = RandomForestClassifier(n_estimators=100)
+clf.fit(X_train,y_train)
+prediction = clf.predict(X_test)
+from sklearn.metrics import confusion_matrix,classification_report
+print(confusion_matrix(y_test,prediction))
+print(classification_report(y_test,prediction))
+
+[[3758   11]
+ [  52 1129]]
+             precision    recall  f1-score   support
+
+          0       0.99      1.00      0.99      3769
+          1       0.99      0.96      0.97      1181
+
+avg / total       0.99      0.99      0.99      4950
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
