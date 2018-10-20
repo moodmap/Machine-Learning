@@ -1,0 +1,122 @@
+from keras.models import Model, Sequential
+from keras.layers import *
+from keras.optimizers import Adam
+from tqdm import tqdm
+from keras.layers.advanced_activations import LeakyReLU
+import numpy as np
+import matplotlib.pyplot as plt
+import scipy.misc
+%matplotlib inline
+
+
+import glob
+from PIL import Image
+import numpy as np
+import matplotlib.pyplot as plt
+
+
+image_path = 'Desktop/Mountains/*'
+images_array = []
+
+for image in glob.glob(image_path):
+    img = Image.open(image)
+    img = Image.Image.resize(img, (280,280))
+    img = np.asarray(img)
+    images_array.append(img)   
+    
+    
+X_train = np.asarray(images_array).astype('float32')
+X_train = X_train.reshape(X_train.shape[0], 280, 280, 3)
+
+# Scaling the range of the image to [-1, 1]
+# Because we are using tanh as the activation function in the last layer of the generator
+# and tanh restricts the weights in the range [-1, 1]
+X_train = (X_train - 127.5) / 127.5
+
+
+generator = Sequential([
+        Dense(128*70*70, input_dim=100, activation=LeakyReLU(0.2)),
+        BatchNormalization(),
+        Reshape((70,70,128)),
+        UpSampling2D(),
+        Convolution2D(42, 5, 5, border_mode='same', activation=LeakyReLU(0.2)),
+        BatchNormalization(),
+        UpSampling2D(),
+        Convolution2D(3, 5, 5, border_mode='same', activation='tanh')
+    ])
+
+discriminator = Sequential([
+        Convolution2D(42, 5, 5, subsample=(2,2), input_shape=(280,280,3), border_mode='same', activation=LeakyReLU(0.2)),
+        Dropout(0.5),
+        Convolution2D(42, 5, 5, subsample=(2,2), border_mode='same', activation=LeakyReLU(0.2)),
+        Dropout(0.5),
+        Flatten(),
+        Dense(1, activation='sigmoid')
+    ])
+    
+    
+generator.compile(loss='binary_crossentropy', optimizer=Adam())
+discriminator.compile(loss='binary_crossentropy', optimizer=Adam())
+
+
+discriminator.trainable = False
+
+ganInput = Input(shape=(100,))
+x = generator(ganInput)
+ganOutput = discriminator(x)
+gan = Model(input=ganInput, output=ganOutput)
+gan.compile(loss='binary_crossentropy', optimizer=Adam())
+
+
+def train(epoch=10, batch_size=10):
+    counter = 0
+    batch_count = X_train.shape[0] // batch_size
+    
+    for i in range(epoch):
+        #plot_output()
+        print("Epoch: {}".format(i))
+        
+
+        for j in range(batch_count):
+            # Input for the generator
+            print("Batch {} out of {}".format(j, batch_count))
+            noise_input = np.random.rand(batch_size, 100)
+            
+            # getting random images from X_train of size=batch_size 
+            # these are the real images that will be fed to the discriminator
+            image_batch = X_train[np.random.randint(0, X_train.shape[0], size=batch_size)]
+            
+            # these are the predicted images from the generator
+            predictions = generator.predict(noise_input, batch_size=batch_size)
+
+            # the discriminator takes in the real images and the generated images
+            X = np.concatenate([predictions, image_batch])
+            
+            # labels for the discriminator
+            y_discriminator = [0]*batch_size + [1]*batch_size
+            
+            # Let's train the discriminator
+            discriminator.trainable = True
+            print("Disc loss: {}".format(discriminator.train_on_batch(X, y_discriminator)))
+            
+            # Let's train the generator
+            y_generator = [1]*batch_size
+            discriminator.trainable = False
+            print("Gan loss: {}\n".format(gan.train_on_batch(noise_input, y_generator)))
+        
+        #Outputting and saving a generated image
+        try_input = np.random.rand(1, 100)
+        preds = (generator.predict(try_input)+1.0)/2.0
+        print(preds.shape)
+        for i in range(preds.shape[0]):
+            plt.imshow(preds[i])
+        plt.show()
+        if counter%50==0 or counter==1:
+            scipy.misc.imsave('Desktop/Mountains/outfile{}.jpg'.format(str(counter)), preds[i])
+        counter+=1
+        
+        
+train(150000, 30)
+
+generator.save_weights('gen_50_scaled_images.h5')
+discriminator.save_weights('dis_50_scaled_images.h5')
